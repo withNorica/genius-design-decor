@@ -1,0 +1,7 @@
+{
+  "name": "Genius Design & Decor",
+  "description": "An AI-powered application to generate design and decor ideas for your home and garden. Upload a photo, choose a style, and let AI inspire you with new visuals and suggestions.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
