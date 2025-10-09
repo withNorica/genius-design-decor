@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +25,8 @@ export default function AuthPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
+    } else {
+      navigate('/');
     }
   };
 
