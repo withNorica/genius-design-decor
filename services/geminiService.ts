@@ -69,7 +69,7 @@ export async function generateImage(
             }
         };
 
-        const imagePromises = Array(3).fill(0).map(() => generateSingleImage());
+        const imagePromises = Array(2).fill(0).map(() => generateSingleImage());
         return await Promise.all(imagePromises);
 
     } catch (error) {

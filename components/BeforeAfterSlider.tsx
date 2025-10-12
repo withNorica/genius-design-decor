@@ -1,3 +1,5 @@
+// VERSIUNEA FINALĂ - COPIAZĂ ȘI LIPEȘTE TOT ACEST COD
+
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 
 interface BeforeAfterSliderProps {
@@ -58,7 +60,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ beforeImag
       </div>
       <div className="absolute top-0 bottom-0 bg-white/50 w-1 backdrop-blur-sm" style={{ left: `${sliderPos}%`, transform: 'translateX(-50%)' }}>
         <div className="absolute top-1/2 left-1/2 bg-white border-2 border-[#E75480] rounded-full h-10 w-10 flex items-center justify-center shadow-lg" style={{ transform: 'translate(-50%, -50%)' }}>
-          <svg className="w-6 h-6 text-[#E75480]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg>
+          {/* AICI ESTE LINIA CORECTĂ ȘI FINALĂ */}
+          <svg className="w-6 h-6 text-[#E75480]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19L3 12l7-7m4 14l7-7-7-7" /></svg>
         </div>
       </div>
     </div>
