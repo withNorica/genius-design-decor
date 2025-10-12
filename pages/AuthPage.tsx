@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/Button';
-import { LoadingSpinner } from '../components/LoadingSpinner';
 
 export default function AuthPage() {
   const { signIn, signUp } = useAuth();
@@ -18,15 +17,16 @@ export default function AuthPage() {
     setError('');
     setLoading(true);
 
-    const { error } = isLogin
-      ? await signIn(email, password)
-      : await signUp(email, password);
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      if (isLogin) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password);
+      }
       navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+      setLoading(false);
     }
   };
 
@@ -83,13 +83,10 @@ export default function AuthPage() {
           <Button
             type="submit"
             disabled={loading}
+            isLoading={loading}
             className="w-full"
           >
-            {loading ? (
-              <LoadingSpinner size="sm" />
-            ) : (
-              isLogin ? 'Sign In' : 'Sign Up'
-            )}
+            {isLogin ? 'Sign In' : 'Sign Up'}
           </Button>
         </form>
 
