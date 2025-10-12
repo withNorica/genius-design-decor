@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { HashRouter, Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AuthPage from './pages/AuthPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import { DESIGN_STYLES, HOLIDAYS, EVENTS, SEASONAL_THEMES } from './constants';
 import { FlowType, GenerationResult, Suggestions, DesignSuggestions, DecorSuggestions } from './types';
 import { generateImage, generateSuggestions } from './services/geminiService';
@@ -18,29 +21,45 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <Routes>
-        <Route path="/" element={<StandardLayout><HomePage /></StandardLayout>} />
-        <Route path="/design" element={<StandardLayout><DesignPage flowType={FlowType.Design} /></StandardLayout>} />
-        <Route path="/decor" element={<StandardLayout><DesignPage flowType={FlowType.Decor} /></StandardLayout>} />
-        <Route path="/result/:id" element={<ResultPage />} />
-        <Route path="/s/:id" element={<SharePage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/" element={<ProtectedRoute><StandardLayout><HomePage /></StandardLayout></ProtectedRoute>} />
+          <Route path="/design" element={<ProtectedRoute><StandardLayout><DesignPage flowType={FlowType.Design} /></StandardLayout></ProtectedRoute>} />
+          <Route path="/decor" element={<ProtectedRoute><StandardLayout><DesignPage flowType={FlowType.Decor} /></StandardLayout></ProtectedRoute>} />
+          <Route path="/result/:id" element={<ProtectedRoute><ResultPage /></ProtectedRoute>} />
+          <Route path="/s/:id" element={<SharePage />} />
+        </Routes>
+      </AuthProvider>
     </HashRouter>
   );
 }
 
 // Standard Layout for Home and Form pages
-const StandardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen bg-stone-50 text-gray-800 font-sans">
-    <header className="p-4 bg-white shadow-sm sticky top-0 z-10">
-      <Link to="/" className="text-2xl font-bold text-gray-900 tracking-tight">Genius Design & Decor</Link>
-    </header>
-    <main>{children}</main>
-    <footer className="text-center p-4 mt-8 text-sm text-gray-500 border-t border-slate-200">
-      Powered by Gemini AI. Generated images are illustrative.
-    </footer>
-  </div>
-);
+const StandardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { signOut, user } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-stone-50 text-gray-800 font-sans">
+      <header className="p-4 bg-white shadow-sm sticky top-0 z-10 flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold text-gray-900 tracking-tight">Genius Design & Decor</Link>
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600">{user?.email}</span>
+          <button
+            onClick={signOut}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+          >
+            Sign Out
+          </button>
+        </div>
+      </header>
+      <main>{children}</main>
+      <footer className="text-center p-4 mt-8 text-sm text-gray-500 border-t border-slate-200">
+        Powered by Gemini AI. Generated images are illustrative.
+      </footer>
+    </div>
+  );
+};
 
 // HomePage Component
 const HomePage: React.FC = () => (
