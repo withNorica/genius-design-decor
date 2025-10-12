@@ -1,18 +1,17 @@
-// VERSIUNEA COMPLETĂ ȘI CORECTATĂ - COPIAZĂ ȘI LIPEȘTE TOT ACEST COD
-
 import React, { useState, useEffect, useRef } from 'react';
-import { HashRouter, Routes, Route, Link, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import AuthPage from './pages/AuthPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import { DESIGN_STYLES, HOLIDAYS, EVENTS, SEASONAL_THEMES } from './constants';
 import { FlowType, GenerationResult, Suggestions, DesignSuggestions, DecorSuggestions } from './types';
-import { generateImage, generateSuggestions } from './services/geminiService';
 import { generateUUID } from './utils';
 import { ImageInput } from './components/ImageInput';
 import { Button } from './components/Button';
 import { Modal } from './components/Modal';
 import { BeforeAfterSlider } from './components/BeforeAfterSlider';
 import { addResult, getResult, initDB } from './idb';
-// Notă: am șters importurile legate de Auth pentru că nu erau în codul original.
-// Dacă ai nevoie de ele, îmi spui și le reintegrez.
+import { supabase } from './lib/supabase';
 
 // Main App component with Router
 const App: React.FC = () => {
@@ -22,29 +21,66 @@ const App: React.FC = () => {
 
   return (
     <HashRouter>
-      <Routes>
-        <Route path="/" element={<StandardLayout><HomePage /></StandardLayout>} />
-        <Route path="/design" element={<StandardLayout><DesignPage flowType={FlowType.Design} /></StandardLayout>} />
-        <Route path="/decor" element={<StandardLayout><DesignPage flowType={FlowType.Decor} /></StandardLayout>} />
-        <Route path="/result/:id" element={<ResultPage />} />
-        <Route path="/s/:id" element={<SharePage />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/" element={<ProtectedRoute><StandardLayout><HomePage /></StandardLayout></ProtectedRoute>} />
+          <Route path="/design" element={<ProtectedRoute><StandardLayout><DesignPage flowType={FlowType.Design} /></StandardLayout></ProtectedRoute>} />
+          <Route path="/decor" element={<ProtectedRoute><StandardLayout><DesignPage flowType={FlowType.Decor} /></StandardLayout></ProtectedRoute>} />
+          <Route path="/result/:id" element={<ProtectedRoute><ResultPage /></ProtectedRoute>} />
+          <Route path="/s/:id" element={<SharePage />} />
+        </Routes>
+      </AuthProvider>
     </HashRouter>
   );
 }
 
 // Standard Layout for Home and Form pages
-const StandardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-screen bg-stone-50 text-gray-800 font-sans">
-    <header className="p-4 bg-white shadow-sm sticky top-0 z-10">
-      <Link to="/" className="text-2xl font-bold text-gray-900 tracking-tight">Genius Design & Decor</Link>
-    </header>
-    <main>{children}</main>
-    <footer className="text-center p-4 mt-8 text-sm text-gray-500 border-t border-slate-200">
-      Powered by Gemini AI. Generated images are illustrative.
-    </footer>
-  </div>
-);
+const StandardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { signOut, user } = useAuth();
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('credits')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (data && !error) {
+          setCredits(data.credits);
+        }
+      }
+    };
+    fetchCredits();
+  }, [user]);
+
+  return (
+    <div className="min-h-screen bg-stone-50 text-gray-800 font-sans">
+      <header className="p-4 bg-white shadow-sm sticky top-0 z-10 flex justify-between items-center">
+        <Link to="/" className="text-2xl font-bold text-gray-900 tracking-tight">Genius Design & Decor</Link>
+        <div className="flex items-center gap-4">
+          {credits !== null && (
+            <span className="text-sm font-medium text-gray-700">Credits left: {credits}</span>
+          )}
+          <span className="text-sm text-gray-600">{user?.email}</span>
+          <button
+            onClick={signOut}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+          >
+            Sign Out
+          </button>
+        </div>
+      </header>
+      <main>{children}</main>
+      <footer className="text-center p-4 mt-8 text-sm text-gray-500 border-t border-slate-200">
+        Powered by Gemini AI. Generated images are illustrative.
+      </footer>
+    </div>
+  );
+};
 
 // HomePage Component
 const HomePage: React.FC = () => (
@@ -74,6 +110,7 @@ interface DesignPageProps {
 const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -82,7 +119,8 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('');
-  
+  const [credits, setCredits] = useState<number | null>(null);
+
   const [designStyles, setDesignStyles] = useState(DESIGN_STYLES);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -100,15 +138,32 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   const [seasonalTheme, setSeasonalTheme] = useState(SEASONAL_THEMES[0]);
 
   useEffect(() => {
+    const fetchCredits = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('credits')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (data && !error) {
+          setCredits(data.credits);
+        }
+      }
+    };
+    fetchCredits();
+  }, [user]);
+
+  useEffect(() => {
     if (location.state && location.state.imageBase64) {
         const { imageBase64, imageMimeType, style, details, holiday, event, seasonalTheme } = location.state as Partial<GenerationResult> & { imageMimeType?: string };
-        
+
         if (imageBase64 && imageMimeType) {
             const mockFile = new File([], "previous-image", { type: imageMimeType });
             setImageFile(mockFile);
             setImageBase64(imageBase64);
         }
-        
+
         if (style) {
             if (!designStyles.includes(style)) {
                 setDesignStyles(prev => [style, ...prev]);
@@ -119,7 +174,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         if (holiday) setHoliday(holiday);
         if (event) setEvent(event);
         if (seasonalTheme) setSeasonalTheme(seasonalTheme);
-        
+
         navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate, designStyles]);
@@ -175,21 +230,50 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       const decorEvent = flowType === FlowType.Decor ? event : undefined;
       const decorTheme = flowType === FlowType.Decor ? seasonalTheme : undefined;
 
-      setLoadingMessage('Generating creative suggestions...');
-      const suggestions = await generateSuggestions(imageBase64, imageFile.type, submissionStyle, details, flowType, decorHoliday, decorEvent, decorTheme);
-      
-      setLoadingMessage('Redesigning your image...');
-      const generatedImageBase64 = await generateImage(imageBase64, imageFile.type, submissionStyle, details, decorHoliday, decorEvent, decorTheme);
+      setLoadingMessage('Generating your design...');
+
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-design`;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageBase64,
+          imageMimeType: imageFile.type,
+          style: submissionStyle,
+          details,
+          flowType,
+          holiday: decorHoliday,
+          event: decorEvent,
+          seasonalTheme: decorTheme,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate design');
+      }
+
+      const result = await response.json();
 
       setLoadingMessage('Finalizing your results...');
       const id = generateUUID();
       const resultToStore: GenerationResult = {
-        id, 
-        type: flowType, 
-        generatedImageBase64, 
-        style: submissionStyle, 
-        details, 
-        suggestions,
+        id,
+        type: flowType,
+        generatedImageBase64: result.generatedImages,
+        style: submissionStyle,
+        details,
+        suggestions: result.suggestions,
         imageBase64,
         imageMimeType: imageFile.type,
         holiday: decorHoliday,
@@ -198,6 +282,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       };
 
       await addResult(resultToStore);
+      setCredits(result.creditsRemaining);
       navigate(`/result/${id}`);
 
     } catch (err) {
@@ -282,9 +367,14 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
 
         <div>
-            <Button type="submit" isLoading={isLoading} disabled={!imageBase64} className="w-full">
+            <Button type="submit" isLoading={isLoading} disabled={!imageBase64 || credits === 0} className="w-full">
                 {isLoading ? loadingMessage : `Generate ${flowType} Ideas`}
             </Button>
+            {credits === 0 && (
+              <p className="text-sm text-amber-600 mt-2 text-center font-medium">
+                You have run out of free trials. Upgrade if you want to generate more images.
+              </p>
+            )}
             {error && <p className="text-sm text-red-600 mt-2 text-center">{error}</p>}
         </div>
       </form>
