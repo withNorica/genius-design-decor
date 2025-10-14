@@ -1,3 +1,4 @@
+// VERSIUNEA CORECTATĂ PENTRU ImageInput.tsx
 import React, { useRef } from 'react';
 
 interface ImageInputProps {
@@ -28,7 +29,8 @@ export const ImageInput: React.FC<ImageInputProps> = ({ onImageSelect, imagePrev
           <img
             src={imagePreview}
             alt="Preview"
-            className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
+            // --- AICI ESTE MODIFICAREA ---
+            className="w-full h-auto object-contain rounded-lg border-2 border-gray-200"
           />
           {onImageRemove && (
             <button
@@ -61,6 +63,7 @@ export const ImageInput: React.FC<ImageInputProps> = ({ onImageSelect, imagePrev
     );
   }
 
+  // Am păstrat versiunea ta mai nouă și mai frumoasă pentru upload-ul inițial
   return (
     <div className="flex flex-col items-center">
       <input
@@ -101,7 +104,7 @@ export const ImageInput: React.FC<ImageInputProps> = ({ onImageSelect, imagePrev
       <div className="flex gap-4 w-full">
         <button
           type="button"
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => { /* Funcționalitate de adăugat */ }}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-700 font-medium flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

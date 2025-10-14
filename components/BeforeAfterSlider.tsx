@@ -1,101 +1,67 @@
-import React, { useState, useRef, useEffect } from 'react';
+// VERSIUNEA CORECTATĂ PENTRU BeforeAfterSlider.tsx
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 
 interface BeforeAfterSliderProps {
   beforeImage: string;
   afterImage: string;
-  altBefore?: string;
-  altAfter?: string;
 }
 
-export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
-  beforeImage,
-  afterImage,
-  altBefore = 'Before',
-  altAfter = 'After',
-}) => {
-  const [sliderPosition, setSliderPosition] = useState(50);
+export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ beforeImage, afterImage }) => {
+  const [sliderPos, setSliderPos] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const updateSliderPosition = (clientX: number) => {
+  const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
-
     const rect = containerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left;
-    const percentage = (x / rect.width) * 100;
-    setSliderPosition(Math.min(Math.max(percentage, 0), 100));
-  };
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const percent = (x / rect.width) * 100;
+    setSliderPos(percent);
+  }, []);
 
-  const handleMouseDown = () => setIsDragging(true);
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDragging) handleMove(e.clientX);
+  }, [isDragging, handleMove]);
 
-  const handleMouseUp = () => setIsDragging(false);
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (isDragging) handleMove(e.touches[0].clientX);
+  }, [isDragging, handleMove]);
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      updateSliderPosition(e.clientX);
-    }
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (isDragging && e.touches[0]) {
-      updateSliderPosition(e.touches[0].clientX);
-    }
-  };
+  const handleMouseUp = useCallback(() => setIsDragging(false), []);
+  const handleTouchEnd = useCallback(() => setIsDragging(false), []);
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleMouseUp);
-
+    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchend', handleTouchEnd);
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleMouseUp);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isDragging]);
+  }, [handleMouseMove, handleTouchMove, handleMouseUp, handleTouchEnd]);
 
   return (
-    <div
+    <div 
       ref={containerRef}
-      className="relative w-full aspect-video overflow-hidden rounded-lg select-none cursor-ew-resize"
+      className="relative w-full aspect-video select-none cursor-ew-resize overflow-hidden rounded-lg bg-slate-100"
+      onMouseDown={() => setIsDragging(true)}
+      onTouchStart={() => setIsDragging(true)}
     >
-      <img
-        src={afterImage}
-        alt={altAfter}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-
-      <div
-        className="absolute inset-0 overflow-hidden"
-        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+      <img src={beforeImage} alt="Before" className="absolute top-0 left-0 w-full h-full object-contain" draggable={false} />
+      <div 
+        className="absolute top-0 left-0 w-full h-full object-contain overflow-hidden" 
+        style={{ clipPath: `inset(0 ${100 - sliderPos}% 0 0)` }}
       >
-        <img
-          src={beforeImage}
-          alt={altBefore}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        <img src={afterImage} alt="After" className="absolute top-0 left-0 w-full h-full object-contain" draggable={false} />
       </div>
-
-      <div
-        className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize"
-        style={{ left: `${sliderPosition}%` }}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleMouseDown}
-      >
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
-          <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-          </svg>
+      <div className="absolute top-0 bottom-0 bg-white/50 w-1 backdrop-blur-sm" style={{ left: `${sliderPos}%`, transform: 'translateX(-50%)' }}>
+        <div className="absolute top-1/2 left-1/2 bg-white border-2 border-[#E75480] rounded-full h-10 w-10 flex items-center justify-center shadow-lg" style={{ transform: 'translate(-50%, -50%)' }}>
+          {/* --- AICI ESTE SĂGEATA CORECTĂ --- */}
+          <svg className="w-6 h-6 text-[#E75480]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19L3 12l7-7m4 14l7-7-7-7" /></svg>
         </div>
-      </div>
-
-      <div className="absolute top-4 left-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm font-medium">
-        Before
-      </div>
-      <div className="absolute top-4 right-4 bg-black bg-opacity-60 text-white px-3 py-1 rounded text-sm font-medium">
-        After
       </div>
     </div>
   );
