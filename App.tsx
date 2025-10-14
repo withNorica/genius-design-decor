@@ -125,7 +125,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
   const [designStyles, setDesignStyles] = useState(DESIGN_STYLES);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
   const initialPresetFields = {
     name: '',
     colorPalette: '',
@@ -190,7 +190,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     setImageFile(null);
     setImageBase64(null);
   };
-  
+
   const handleSaveCustomStyle = () => {
     const { name, colorPalette, furnitureTypes, decorElements, overallMood } = customPresetFields;
     if (name.trim()) {
@@ -206,7 +206,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         ].filter(Boolean).join('. ');
 
         setDetails(presetDetails);
-        
+
         setIsModalOpen(false);
         setCustomPresetFields(initialPresetFields);
     }
@@ -216,7 +216,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     const { name, value } = e.target;
     setCustomPresetFields(prev => ({...prev, [name]: value}));
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageBase64 || !imageFile) {
@@ -296,10 +296,10 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   };
 
   const title = flowType === FlowType.Design ? 'Design your Space' : 'Decorate your Space';
-  const description = flowType === FlowType.Design 
+  const description = flowType === FlowType.Design
     ? "Upload a photo of your room, house exterior, or garden to get new design ideas."
     : "Get creative decoration suggestions for any space.";
-    
+
   const formInputStyles = "block w-full mt-1 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-pink-300 focus:border-pink-300 transition-colors";
 
   return (
@@ -308,17 +308,17 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         <h1 className="text-4xl font-bold capitalize text-[#E75480]">{title}</h1>
         <p className="text-lg text-gray-600 mt-2">{description}</p>
       </div>
-      
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <div className="w-full bg-white p-6 rounded-xl shadow-md space-y-4">
           <h2 className="text-2xl font-semibold text-center">1. Your Image</h2>
           {/* AICI ESTE SINGURA MODIFICARE: AM PUS LA LOC COMPONENTA CORECTĂ */}
           <ImageInput onImageSelect={handleImageSelect} imagePreview={imageBase64} onImageRemove={handleReplaceImage} />
         </div>
-        
+
         <div className="space-y-6 bg-white p-6 rounded-xl shadow-md">
             <h2 className="text-2xl font-semibold">2. {flowType === FlowType.Design ? 'Select a Design Style' : 'Choose Your Decor Theme'}</h2>
-            
+
             {flowType === FlowType.Design && (
                 <div>
                     <label htmlFor="style" className="block text-sm font-medium text-gray-700">Design Style</label>
@@ -330,7 +330,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
                     </div>
                 </div>
             )}
-          
+
             {flowType === FlowType.Decor && (
                 <>
                     <div>
@@ -354,7 +354,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
                 </>
             )}
         </div>
-        
+
         <div className="bg-white p-6 rounded-xl shadow-md">
           <h2 className="text-2xl font-semibold mb-4">3. Add Specific Changes (optional)</h2>
           <textarea
@@ -381,10 +381,10 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
             {error && <p className="text-sm text-red-600 mt-2 text-center">{error}</p>}
         </div>
       </form>
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        title="Create Custom Style Preset" 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Create Custom Style Preset"
         footer={
             <>
                 <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">Cancel</button>
@@ -395,11 +395,11 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         <div className="space-y-4">
             <div>
                 <label htmlFor="preset-name" className="block text-sm font-medium text-gray-700">Preset Name</label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     id="preset-name"
                     name="name"
-                    value={customPresetFields.name} 
+                    value={customPresetFields.name}
                     onChange={handlePresetFieldChange}
                     placeholder="e.g., 'Cozy Cottage'"
                     className={formInputStyles}
@@ -407,11 +407,11 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
             </div>
             <div>
                 <label htmlFor="color-palette" className="block text-sm font-medium text-gray-700">Color Palette</label>
-                <textarea 
+                <textarea
                     id="color-palette"
                     name="colorPalette"
                     rows={2}
-                    value={customPresetFields.colorPalette} 
+                    value={customPresetFields.colorPalette}
                     onChange={handlePresetFieldChange}
                     placeholder="e.g., 'Earthy tones, cream, terracotta'"
                     className={formInputStyles}
@@ -419,11 +419,11 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
             </div>
              <div>
                 <label htmlFor="furniture-types" className="block text-sm font-medium text-gray-700">Furniture Types</label>
-                <textarea 
+                <textarea
                     id="furniture-types"
                     name="furnitureTypes"
                     rows={2}
-                    value={customPresetFields.furnitureTypes} 
+                    value={customPresetFields.furnitureTypes}
                     onChange={handlePresetFieldChange}
                     placeholder="e.g., 'Plush sofas, rustic wood, leather armchairs'"
                     className={formInputStyles}
@@ -431,11 +431,11 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
             </div>
              <div>
                 <label htmlFor="decor-elements" className="block text-sm font-medium text-gray-700">Decor Elements</label>
-                <textarea 
+                <textarea
                     id="decor-elements"
                     name="decorElements"
                     rows={2}
-                    value={customPresetFields.decorElements} 
+                    value={customPresetFields.decorElements}
                     onChange={handlePresetFieldChange}
                     placeholder="e.g., 'Woven textiles, houseplants, vintage art'"
                     className={formInputStyles}
@@ -443,11 +443,11 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
             </div>
              <div>
                 <label htmlFor="overall-mood" className="block text-sm font-medium text-gray-700">Overall Mood</label>
-                <textarea 
+                <textarea
                     id="overall-mood"
                     name="overallMood"
                     rows={2}
-                    value={customPresetFields.overallMood} 
+                    value={customPresetFields.overallMood}
                     onChange={handlePresetFieldChange}
                     placeholder="e.g., 'Warm, inviting, and peaceful'"
                     className={formInputStyles}
@@ -542,7 +542,7 @@ const ResultPage: React.FC = () => {
           text: 'Check out these designs I created with AI!',
           url: shareUrl,
       };
-  
+
       try {
           if (navigator.share) {
               await navigator.share(shareData);
@@ -602,7 +602,7 @@ const ResultPage: React.FC = () => {
             textContent += '\nDIY Ideas:\n';
             design.diy.forEach(item => textContent += `• ${item}\n`);
         }
-        
+
         const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
@@ -611,7 +611,7 @@ const ResultPage: React.FC = () => {
         link.click();
         document.body.removeChild(link);
     };
-    
+
     if (!result) return <div className="text-center p-12">Loading result... or result not found.</div>;
 
     const pageTitle = result.type === FlowType.Decor ? "Decorated Image" : "Redesigned Image";
@@ -632,17 +632,17 @@ const ResultPage: React.FC = () => {
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-stone-200 flex flex-col gap-4">
                     <h2 className="text-2xl font-bold text-center">{pageTitle}</h2>
                     {result.imageBase64 && images.length > 0 && (
-                      <BeforeAfterSlider 
+                      <BeforeAfterSlider
                         beforeImage={result.imageBase64}
                         afterImage={images[selectedImageIndex]}
                       />
                     )}
-                    
+
                     <div className="flex justify-center gap-4 pt-2">
                         {images.map((img, index) => (
-                            <img 
-                                key={index} 
-                                src={img} 
+                            <img
+                                key={index}
+                                src={img}
                                 alt={`Variation ${index + 1}`}
                                 onClick={() => {
                                     setSelectedImageIndex(index);
@@ -661,7 +661,7 @@ const ResultPage: React.FC = () => {
                     </div>
                     {shareStatus && <p className="text-center text-sm text-green-600 mt-2">{shareStatus}</p>}
                 </div>
-                
+
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-stone-200">
                      <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold" role="heading" aria-level={2}>{suggestionsTitle}</h2>
@@ -671,7 +671,7 @@ const ResultPage: React.FC = () => {
                         </button>
                     </div>
                     <div className="h-[70vh] overflow-y-auto pr-2">
-                      {result.type === FlowType.Design ? 
+                      {result.type === FlowType.Design ?
                           <DesignSuggestionsDisplay suggestions={result.suggestions as DesignSuggestions} /> :
                           <DecorSuggestionsDisplay suggestions={result.suggestions as DecorSuggestions} />
                       }
@@ -722,7 +722,7 @@ const SharePage: React.FC = () => {
     };
 
     if (!result) return <div className="text-center p-12">Shared design not found.</div>;
-    
+
     const pageTitle = result.type === FlowType.Decor ? "Decorated Image Variations" : "Redesigned Image Variations";
     const images = Array.isArray(result.generatedImageBase64) ? result.generatedImageBase64 : [result.generatedImageBase64];
 
@@ -741,8 +741,8 @@ const SharePage: React.FC = () => {
                         {images.map((img, index) => (
                             <div key={index} className="relative group">
                                 <img src={img} alt={`Generated Design Variation ${index + 1}`} className="w-full object-contain rounded-lg" />
-                                <button 
-                                    onClick={() => handleDownload(img, index)} 
+                                <button
+                                    onClick={() => handleDownload(img, index)}
                                     className="absolute bottom-2 right-2 flex items-center gap-2 px-3 py-1.5 border border-stone-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white/80 backdrop-blur-sm hover:bg-white transition-opacity opacity-0 group-hover:opacity-100"
                                     aria-label={`Download variation ${index + 1}`}
                                 >
@@ -753,14 +753,14 @@ const SharePage: React.FC = () => {
                         ))}
                     </div>
                 </div>
-                
+
                  {/* Right Column */}
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-stone-200">
                      <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl font-bold">Suggestions</h2>
                     </div>
                     <div className="h-[70vh] overflow-y-auto pr-2">
-                      {result.type === FlowType.Design ? 
+                      {result.type === FlowType.Design ?
                           <DesignSuggestionsDisplay suggestions={result.suggestions as DesignSuggestions} /> :
                           <DecorSuggestionsDisplay suggestions={result.suggestions as DecorSuggestions} />
                       }
