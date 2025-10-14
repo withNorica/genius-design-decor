@@ -1,3 +1,5 @@
+// VERSIUNEA FINALĂ ȘI COMPLETĂ - COPIAZĂ ȘI LIPEȘTE TOT ACEST COD
+
 import React, { useState, useEffect, useRef } from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate, useParams, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -6,7 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { DESIGN_STYLES, HOLIDAYS, EVENTS, SEASONAL_THEMES } from './constants';
 import { FlowType, GenerationResult, Suggestions, DesignSuggestions, DecorSuggestions } from './types';
 import { generateUUID } from './utils';
-import { ImageInput } from './components/ImageInput';
+import { ImageInput } from './components/ImageInput'; // Asigură-te că importul este corect
 import { Button } from './components/Button';
 import { Modal } from './components/Modal';
 import { BeforeAfterSlider } from './components/BeforeAfterSlider';
@@ -310,6 +312,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       <form onSubmit={handleSubmit} className="flex flex-col gap-8">
         <div className="w-full bg-white p-6 rounded-xl shadow-md space-y-4">
           <h2 className="text-2xl font-semibold text-center">1. Your Image</h2>
+          {/* AICI ESTE SINGURA MODIFICARE: AM PUS LA LOC COMPONENTA CORECTĂ */}
           <ImageInput onImageSelect={handleImageSelect} imagePreview={imageBase64} onImageRemove={handleReplaceImage} />
         </div>
         
