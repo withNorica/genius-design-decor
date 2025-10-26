@@ -123,6 +123,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [credits, setCredits] = useState<number | null>(null);
+  const [result, setResult] = useState<GenerationResult | null>(null);
 
   const [designStyles, setDesignStyles] = useState(DESIGN_STYLES);
   const [isModalOpen, setIsModalOpen] = useState(false);
