@@ -284,73 +284,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       setIsLoading(false);
     }
   };
-      const submissionStyle = flowType === FlowType.Design ? style : "thematic decor";
-      const decorHoliday = flowType === FlowType.Decor ? holiday : undefined;
-      const decorEvent = flowType === FlowType.Decor ? event : undefined;
-      const decorTheme = flowType === FlowType.Decor ? seasonalTheme : undefined;
-
-      setLoadingMessage('Generating your design...');
-
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
-
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-decor`;
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageBase64,
-          imageMimeType: imageFile.type,
-          style: submissionStyle,
-          details,
-          flowType,
-          holiday: decorHoliday,
-          event: decorEvent,
-          seasonalTheme: decorTheme,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate design');
-      }
-
-      const result = await response.json();
-
-      setLoadingMessage('Finalizing your results...');
-      const id = generateUUID();
-      const resultToStore: GenerationResult = {
-        id,
-        type: flowType,
-        generatedImageBase64: result.generatedImages,
-        style: submissionStyle,
-        details,
-        suggestions: result.suggestions,
-        imageBase64,
-        imageMimeType: imageFile.type,
-        holiday: decorHoliday,
-        event: decorEvent,
-        seasonalTheme: decorTheme,
-      };
-
-      await addResult(resultToStore);
-      setCredits(result.creditsRemaining);
-      navigate(`/result/${id}`);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred.");
-    } finally {
-      setIsLoading(false);
-      setLoadingMessage('');
-    }
-  };
+      
 
   const title = flowType === FlowType.Design ? 'Design your Space' : 'Decorate your Space';
   const description = flowType === FlowType.Design
