@@ -14,6 +14,7 @@ import { Modal } from './components/Modal';
 import { BeforeAfterSlider } from './components/BeforeAfterSlider';
 import { addResult, getResult, initDB } from './idb';
 import { supabase } from './lib/supabase';
+import { generateDecor } from './lib/gemini';
 
 // Main App component with Router
 const App: React.FC = () => {
@@ -241,7 +242,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         throw new Error('Not authenticated');
       }
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-design`;
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-decor`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
