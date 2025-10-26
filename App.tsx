@@ -231,7 +231,6 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
     try {
       const cleanedBase64 = imageBase64.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
-
       const submissionStyle = flowType === FlowType.Design ? style : "thematic decor";
       const decorHoliday = flowType === FlowType.Decor ? holiday : undefined;
       const decorEvent = flowType === FlowType.Decor ? event : undefined;
@@ -239,10 +238,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-
-      if (!token) {
-        throw new Error('Not authenticated');
-      }
+      if (!token) throw new Error('Not authenticated');
 
       const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-decor`;
       const response = await fetch(apiUrl, {
@@ -252,14 +248,9 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageBase64: cleanedBase64,
-          imageMimeType: imageFile.type,
-          style: submissionStyle,
-          details,
-          flowType,
-          holiday: decorHoliday,
-          event: decorEvent,
-          seasonalTheme: decorTheme,
+          imageBase64: cleanedBase64, imageMimeType: imageFile.type,
+          style: submissionStyle, details, flowType,
+          holiday: decorHoliday, event: decorEvent, seasonalTheme: decorTheme,
         }),
       });
 
@@ -270,19 +261,38 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
       const resultData = await response.json();
 
-      setResult({
-        ...resultData,
-        image: `data:image/png;base64,${resultData.image}`,
+      // --->>> AICI ESTE REPARAȚIA CHEIE <<<---
+      setLoadingMessage('Finalizing your results...');
+      const id = generateUUID(); // Generează un ID unic
+
+      // Creează obiectul rezultat pentru a-l salva
+      const resultToStore: GenerationResult = {
+        id,
         type: flowType,
-        originalImageBase64: imageBase64,
-      });
-      navigate('/result');
+        // Atenție: backend-ul trimite 'image', nu 'generatedImages'
+        generatedImageBase64: `data:image/png;base64,${resultData.image}`,
+        style: submissionStyle,
+        details,
+        suggestions: resultData.suggestions, // Backend-ul trimite 'suggestions'
+        imageBase64, // Imaginea originală
+        imageMimeType: imageFile.type,
+        holiday: decorHoliday,
+        event: decorEvent,
+        seasonalTheme: decorTheme,
+      };
+
+      await addResult(resultToStore); // Salvează rezultatul în baza de date locală
+      
+      // Acum navighează la pagina de rezultate CU ID
+      navigate(`/result/${id}`);
+      // --->>> SFÂRȘIT REPARAȚIE <<<---
 
     } catch (err: any) {
       console.error('Generation error:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
+      setLoadingMessage('');
     }
   };
       

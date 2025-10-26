@@ -18,40 +18,45 @@ Deno.serve(async (req) => {
     if (!profile) return sendResponse({ error: 'Profile not found.' }, 500);
     if (profile.credits <= 0) return sendResponse({ error: 'Insufficient credits.' }, 402);
 
-    let prompt = `Redecorate the image. `;
-    if (flowType === 'Design') prompt += `Style: "${style}". Details: "${details}".`;
-    else if (flowType === 'Decor') prompt += `Holiday: "${holiday}". Event: "${event}". Theme: "${seasonalTheme}".`;
-    prompt += ` The response MUST be a valid JSON object with two keys: "image" (a base64 string of the new image) and "suggestions" (a string with 3-5 suggestions). Do not include the "json" markdown tag in your response.`;
-
+    let userRequest = '';
+    if (flowType === 'Design') userRequest = `Style: "${style}". Details: "${details}".`;
+    else if (flowType === 'Decor') userRequest = `Holiday: "${holiday}". Event: "${event}". Theme: "${seasonalTheme}".`;
+    
+    const prompt = `Based on the user's image and request ("${userRequest}"), generate a new image. Your response MUST contain a single, valid JSON object with two keys: "image" (base64 string) and "suggestions" (string).`;
+    
     const safetySettings = [
       { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
       { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
       { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
       { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
     ];
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image', safetySettings });
     
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image', safetySettings });
     const imagePart = { inlineData: { data: imageBase64, mimeType: imageMimeType } };
     const result = await model.generateContent([prompt, imagePart]);
     const responseText = result.response.text();
 
-    if (!responseText || responseText.trim() === '') {
-      throw new Error("Gemini returned an empty response, likely due to safety filters.");
+    if (!responseText) {
+      throw new Error("Gemini returned an empty response.");
     }
     
-    // --->>> AM PUS ÎNAPOI CODUL DE CURĂȚARE <<<---
-    const cleanedText = responseText.replace(/```json|```/g, '').trim();
-    const parsedData = JSON.parse(cleanedText);
-    // --->>> SFÂRȘIT MODIFICARE <<<---
+    // --->>> AICI ESTE SOLUȚIA "ANTIGLONȚ" <<<---
+    const startIndex = responseText.indexOf('{');
+    const endIndex = responseText.lastIndexOf('}');
+    
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error("Valid JSON object not found in Gemini's response.");
+    }
+
+    const jsonString = responseText.substring(startIndex, endIndex + 1);
+    const parsedData = JSON.parse(jsonString);
+    // --->>> SFÂRȘIT SOLUȚIE <<<---
 
     await supabase.from('profiles').update({ credits: profile.credits - 1 }).eq('id', user.id);
     return sendResponse(parsedData);
 
   } catch (error) {
     console.error('Critical error in function:', error);
-    if (error.message.includes("safety filters")) {
-        return sendResponse({ error: 'Generation blocked by safety filters. Try a different image or prompt.' }, 400);
-    }
     return sendResponse({ error: 'An error occurred on the server.' }, 500);
   }
 });
