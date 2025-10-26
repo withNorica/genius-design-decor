@@ -218,7 +218,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     setCustomPresetFields(prev => ({...prev, [name]: value}));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageBase64 || !imageFile) {
       setError("Please upload an image first.");
@@ -226,8 +226,72 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     }
     setError(null);
     setIsLoading(true);
+    setLoadingMessage('Generating your design...'); // Am adăugat și asta ca să fie complet
 
     try {
+      // --->>> ÎNCEPUT MODIFICARE <<<---
+
+      // PASUL 1: Curățăm prefixul de pe imaginea base64
+      const cleanedBase64 = imageBase64.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
+
+      // PASUL 2 (pe care l-am făcut deja, dar îl includem aici ca să fie totul clar)
+      const submissionStyle = flowType === FlowType.Design ? style : "thematic decor";
+      const decorHoliday = flowType === FlowType.Decor ? holiday : undefined;
+      const decorEvent = flowType === FlowType.Decor ? event : undefined;
+      const decorTheme = flowType === FlowType.Decor ? seasonalTheme : undefined;
+
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-decor`; // Numele corect al funcției
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // PASUL 3: Aici folosim imaginea CURĂȚATĂ
+          imageBase64: cleanedBase64, 
+          imageMimeType: imageFile.type,
+          style: submissionStyle,
+          details,
+          flowType,
+          holiday: decorHoliday,
+          event: decorEvent,
+          seasonalTheme: decorTheme,
+        }),
+      });
+
+      // --->>> SFÂRȘIT MODIFICARE <<<---
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Generation failed.');
+      }
+
+      const resultData = await response.json();
+
+      setResult({
+        ...resultData,
+        // Asigură-te că adaugi prefixul înapoi pentru afișare, dacă e necesar
+        image: `data:image/png;base64,${resultData.image}`,
+        type: flowType,
+        originalImageBase64: imageBase64,
+      });
+      navigate('/result');
+
+    } catch (err: any) {
+      console.error('Generation error:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
       const submissionStyle = flowType === FlowType.Design ? style : "thematic decor";
       const decorHoliday = flowType === FlowType.Decor ? holiday : undefined;
       const decorEvent = flowType === FlowType.Decor ? event : undefined;
