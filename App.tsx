@@ -270,7 +270,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         id,
         type: flowType,
         // Atenție: backend-ul trimite 'image', nu 'generatedImages'
-        generatedImageBase64: `data:image/png;base64,${resultData.image}`,
+        generatedImageBase64: [`data:image/png;base64,${resultData.image}`],
         style: submissionStyle,
         details,
         suggestions: resultData.suggestions, // Backend-ul trimite 'suggestions'
