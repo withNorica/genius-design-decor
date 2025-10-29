@@ -219,7 +219,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     setCustomPresetFields(prev => ({...prev, [name]: value}));
   };
 
- const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imageBase64 || !imageFile) {
       setError("Please upload an image first.");
@@ -227,20 +227,23 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     }
     setError(null);
     setIsLoading(true);
-    setLoadingMessage('Generating your design...');
 
     try {
-      const cleanedBase64 = imageBase64.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
       const submissionStyle = flowType === FlowType.Design ? style : "thematic decor";
       const decorHoliday = flowType === FlowType.Decor ? holiday : undefined;
       const decorEvent = flowType === FlowType.Decor ? event : undefined;
       const decorTheme = flowType === FlowType.Decor ? seasonalTheme : undefined;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error('Not authenticated');
+      setLoadingMessage('Generating your design...');
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-decor`;
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-design`;
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -248,48 +251,46 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageBase64: cleanedBase64, imageMimeType: imageFile.type,
-          style: submissionStyle, details, flowType,
-          holiday: decorHoliday, event: decorEvent, seasonalTheme: decorTheme,
+          imageBase64,
+          imageMimeType: imageFile.type,
+          style: submissionStyle,
+          details,
+          flowType,
+          holiday: decorHoliday,
+          event: decorEvent,
+          seasonalTheme: decorTheme,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Generation failed.');
+        throw new Error(errorData.error || 'Failed to generate design');
       }
 
-      const resultData = await response.json();
+      const result = await response.json();
 
-      // --->>> AICI ESTE REPARAȚIA CHEIE <<<---
       setLoadingMessage('Finalizing your results...');
-      const id = generateUUID(); // Generează un ID unic
-
-      // Creează obiectul rezultat pentru a-l salva
+      const id = generateUUID();
       const resultToStore: GenerationResult = {
         id,
         type: flowType,
-        // Atenție: backend-ul trimite 'image', nu 'generatedImages'
-        generatedImageBase64: [`data:image/png;base64,${resultData.image}`],
+        generatedImageBase64: result.generatedImages,
         style: submissionStyle,
         details,
-        suggestions: resultData.suggestions, // Backend-ul trimite 'suggestions'
-        imageBase64, // Imaginea originală
+        suggestions: result.suggestions,
+        imageBase64,
         imageMimeType: imageFile.type,
         holiday: decorHoliday,
         event: decorEvent,
         seasonalTheme: decorTheme,
       };
 
-      await addResult(resultToStore); // Salvează rezultatul în baza de date locală
-      
-      // Acum navighează la pagina de rezultate CU ID
+      await addResult(resultToStore);
+      setCredits(result.creditsRemaining);
       navigate(`/result/${id}`);
-      // --->>> SFÂRȘIT REPARAȚIE <<<---
 
-    } catch (err: any) {
-      console.error('Generation error:', err);
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An unknown error occurred.");
     } finally {
       setIsLoading(false);
       setLoadingMessage('');
