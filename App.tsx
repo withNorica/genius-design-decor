@@ -282,7 +282,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         </div>
       </Modal>
 
-      <Modal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} title="No Credits Left" footer={<><button onClick={() => setIsUpgradeModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition">Close</button><a href="https://geniusdecor.ro/pricing" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium text-white bg-[#E75480] border border-transparent rounded-md shadow-sm hover:bg-[#D2436D] transition">View Pricing</a></>}>
+      <Modal isOpen={isUpgradeModalOpen} onClose={() => setIsUpgradeModalOpen(false)} title="No Credits Left" footer={<><button onClick={() => setIsUpgradeModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition">Close</button><a href="https://www.geniusdesigndecor.com/pricing" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium text-white bg-[#E75480] border border-transparent rounded-md shadow-sm hover:bg-[#D2436D] transition">View Pricing</a></>}>
         <div className="text-center">
           <p className="text-lg text-gray-700 mb-2">You have run out of free credits.</p>
           <p className="text-sm text-gray-500">Please visit our pricing page to purchase more credits and continue generating amazing designs.</p>
