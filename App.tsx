@@ -269,21 +269,42 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
       const result = await response.json();
 
-      setLoadingMessage('Finalizing your results...');
-      const id = generateUUID();
-      const resultToStore: GenerationResult = {
-        id,
-        type: flowType,
-        generatedImageBase64: [`data:image/png;base64,${result.image}`],
-        style: submissionStyle,
-        details,
-        suggestions: result.suggestions,
-        imageBase64,
-        imageMimeType: imageFile.type,
-        holiday: decorHoliday,
-        event: decorEvent,
-        seasonalTheme: decorTheme,
-      };
+// vezi exact ce trimite backend-ul
+console.log('API RESULT:', result);
+
+// normalizăm imaginile, indiferent cum vin
+const generatedImages: string[] =
+  // 1) cazul „vechi”: backend trimite generatedImages (array)
+  Array.isArray(result.generatedImages)
+    ? result.generatedImages
+    // 2) dacă generatedImages e un singur string
+    : typeof result.generatedImages === 'string'
+    ? [result.generatedImages]
+    // 3) fallback: backend trimite image = base64 pur (fără 'data:image...')
+    : typeof result.image === 'string'
+    ? [
+        result.image.startsWith('data:image')
+          ? result.image
+          : `data:image/png;base64,${result.image}`,
+      ]
+    : [];
+
+setLoadingMessage('Finalizing your results...');
+const id = generateUUID();
+
+const resultToStore: GenerationResult = {
+  id,
+  type: flowType,
+  generatedImageBase64: generatedImages,  // ✅ aici punem array-ul curat
+  style: submissionStyle,
+  details,
+  suggestions: result.suggestions,
+  imageBase64,
+  imageMimeType: imageFile.type,
+  holiday: decorHoliday,
+  event: decorEvent,
+  seasonalTheme: decorTheme,
+};
 
       await addResult(resultToStore);
       setCredits(result.creditsRemaining);
