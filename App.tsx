@@ -531,7 +531,15 @@ const ResultPage: React.FC = () => {
         }
     }, [id]);
 
-    const images = result ? (Array.isArray(result.generatedImageBase64) ? result.generatedImageBase64 : [result.generatedImageBase64]) : [];
+    const images: string[] =
+  result && result.generatedImageBase64
+    ? [
+        Array.isArray(result.generatedImageBase64)
+          ? result.generatedImageBase64[0] // doar prima imagine
+          : result.generatedImageBase64,    // dacă e string simplu
+      ]
+    : [];
+
 
     // Funcții pentru a gestiona fereastra modală
     const handleOpenImageModal = (imageUrl: string) => {
