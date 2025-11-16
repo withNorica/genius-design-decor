@@ -274,7 +274,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       const resultToStore: GenerationResult = {
         id,
         type: flowType,
-        generatedImageBase64: result.generatedImages,
+        generatedImageBase64: [`data:image/png;base64,${result.image}`],
         style: submissionStyle,
         details,
         suggestions: result.suggestions,
