@@ -274,7 +274,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       const resultToStore: GenerationResult = {
         id,
         type: flowType,
-        generatedImageBase64: result.generatedImages,
+         generatedImageBase64: [`data:image/png;base64,${result.image}`],
         style: submissionStyle,
         details,
         suggestions: result.suggestions,
@@ -674,14 +674,11 @@ const ResultPage: React.FC = () => {
                         </button>
                     </div>
                     <div className="h-[70vh] overflow-y-auto pr-2">
-                        {/* Verificăm dacă există sugestii */}
-               {result && result.suggestions && (
-            // Folosim `white-space: pre-wrap` pentru a respecta rândurile noi din text
-              <p className="text-gray-700 whitespace-pre-wrap">
-            {result.suggestions}
-            </p>
-              )}
-                </div>
+                     {result.type === FlowType.Design ?
+                       <DesignSuggestionsDisplay suggestions={result.suggestions as DesignSuggestions} /> :
+                       <DecorSuggestionsDisplay suggestions={result.suggestions as DecorSuggestions} />
+                       }
+                         </div>
                 </div>
             </main>
             <footer className="text-center p-4 mt-8 text-sm text-gray-500">
@@ -781,4 +778,3 @@ const SharePage: React.FC = () => {
 };
 
 export default App;
-
