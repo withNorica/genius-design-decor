@@ -274,13 +274,10 @@ console.log('API RESULT:', result);
 
 // normalizăm imaginile, indiferent cum vin
 const generatedImages: string[] =
-  // 1) cazul „vechi”: backend trimite generatedImages (array)
-  Array.isArray(result.generatedImages)
-    ? result.generatedImages
-    // 2) dacă generatedImages e un singur string
+  Array.isArray(result.generatedImages) && result.generatedImages.length > 0
+    ? [result.generatedImages[0]] // <— Doar prima imagine, pusă în array
     : typeof result.generatedImages === 'string'
     ? [result.generatedImages]
-    // 3) fallback: backend trimite image = base64 pur (fără 'data:image...')
     : typeof result.image === 'string'
     ? [
         result.image.startsWith('data:image')
@@ -295,7 +292,7 @@ const id = generateUUID();
 const resultToStore: GenerationResult = {
   id,
   type: flowType,
-  generatedImageBase64: generatedImages,  // ✅ aici punem array-ul curat
+  generatedImageBase64: generatedImages,  // <— acum e mereu array cu 0 sau 1 element
   style: submissionStyle,
   details,
   suggestions: result.suggestions,
