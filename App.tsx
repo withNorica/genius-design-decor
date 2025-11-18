@@ -221,6 +221,15 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+     // --->>> ADAUGĂ ACEST BLOC AICI <<<---
+  if (credits !== null && credits <= 0) {
+    setIsUpgradeModalOpen(true);
+    return;
+  }
+  // --->>> SFÂRȘIT BLOC <<<---
+
+  if (!imageBase64 || !imageFile) {
+  // ... restul funcției continuă neschimbat
     if (!imageBase64 || !imageFile) {
       setError("Please upload an image first.");
       return;
@@ -391,17 +400,37 @@ const resultToStore: GenerationResult = {
 
 
         <div>
-            <Button type="submit" isLoading={isLoading} disabled={!imageBase64 || credits === 0} className="w-full">
+            <Button type="submit" isLoading={isLoading} disabled={!imageBase64} className="w-full">
                 {isLoading ? loadingMessage : `Generate ${flowType} Ideas`}
             </Button>
-            {credits === 0 && (
-              <p className="text-sm text-amber-600 mt-2 text-center font-medium">
-                You have run out of free trials. Upgrade if you want to generate more images.
-              </p>
-            )}
+            
             {error && <p className="text-sm text-red-600 mt-2 text-center">{error}</p>}
         </div>
       </form>
+       <Modal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        title="No Credits Left"
+        footer={
+          <>
+            <button onClick={() => setIsUpgradeModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition">
+              Close
+            </button>
+            <a href="https://www.geniusdesigndecor.com/pricing" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium text-white bg-[#E75480] border border-transparent rounded-md shadow-sm hover:bg-[#D2436D] transition">
+              View Pricing
+            </a>
+          </>
+        }
+      >
+        <div className="text-center">
+          <p className="text-lg text-gray-700 mb-2">You have run out of free credits.</p>
+          <p className="text-sm text-gray-500">Please visit our pricing page to purchase more credits.</p>
+        </div>
+      </Modal>
+      {/* --->>> SFÂRȘIT BLOC <<<--- */}
+
+  <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} ... >
+  {/* ... aici continuă modalul pentru stil custom ... */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -512,6 +541,7 @@ const ResultPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [result, setResult] = useState<GenerationResult | null>(null);
+    const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
     const [shareStatus, setShareStatus] = useState('');
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
