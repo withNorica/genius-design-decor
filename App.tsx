@@ -429,7 +429,7 @@ const resultToStore: GenerationResult = {
       </Modal>
       {/* --->>> SFÂRȘIT BLOC <<<--- */}
 
-  <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} ... >
+  <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
   {/* ... aici continuă modalul pentru stil custom ... */}
       <Modal
         isOpen={isModalOpen}
