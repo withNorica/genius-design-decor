@@ -86,7 +86,9 @@ const App: React.FC = () => {
 };
 
 // Standard Layout for Home and Form pages
-const StandardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const StandardLayout: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { signOut, user } = useAuth();
   const [credits, setCredits] = useState<number | null>(null);
 
@@ -110,7 +112,10 @@ const StandardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return (
     <div className="min-h-screen bg-stone-50 text-gray-800 font-sans">
       <header className="p-4 bg-white shadow-sm sticky top-0 z-10 flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-gray-900 tracking-tight">
+        <Link
+          to="/"
+          className="text-2xl font-bold text-gray-900 tracking-tight"
+        >
           Genius Design & Decor
         </Link>
         <div className="flex items-center gap-4">
@@ -142,10 +147,12 @@ const HomePage: React.FC = () => (
     <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900">
       Genius Design & Decor
     </h1>
-    <p className="text-xl text-[#E75480]">AI Ideas for Interiors, Exteriors & Gardens</p>
+    <p className="text-xl text-[#E75480]">
+      AI Ideas for Interiors, Exteriors & Gardens
+    </p>
     <p className="max-w-xl text-gray-500">
-      Transform your space with AI. Upload a photo and get instant inspiration for your next
-      project.
+      Transform your space with AI. Upload a photo and get instant inspiration
+      for your next project.
     </p>
     <div className="flex flex-col sm:flex-row gap-4 mt-4">
       <Link to="/design">
@@ -193,7 +200,8 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     decorElements: '',
     overallMood: '',
   };
-  const [customPresetFields, setCustomPresetFields] = useState(initialPresetFields);
+  const [customPresetFields, setCustomPresetFields] =
+    useState(initialPresetFields);
 
   const [holiday, setHoliday] = useState(HOLIDAYS[0]);
   const [event, setEvent] = useState(EVENTS[0]);
@@ -226,7 +234,9 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         holiday,
         event,
         seasonalTheme,
-      } = location.state as Partial<GenerationResult> & { imageMimeType?: string };
+      } = location.state as Partial<GenerationResult> & {
+        imageMimeType?: string;
+      };
 
       if (imageBase64 && imageMimeType) {
         const mockFile = new File([], 'previous-image', { type: imageMimeType });
@@ -1058,9 +1068,7 @@ const SharePage: React.FC = () => {
   };
 
   if (!result)
-    return (
-      <div className="text-center p-12">Shared design not found.</div>
-    );
+    return <div className="text-center p-12">Shared design not found.</div>;
 
   const pageTitle =
     result.type === FlowType.Decor

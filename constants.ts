@@ -1,6 +1,11 @@
+// constants.ts
 
+// ----------------------
+// Design Styles by Space
+// ----------------------
 
-const styles = [
+// Interior design styles
+export const INTERIOR_STYLES = [
   "Modern",
   "Minimalist",
   "Scandinavian",
@@ -36,9 +41,66 @@ const styles = [
   "Organic Modern",
   "Asian Contemporary",
   "Industrial Loft",
+  "Hollywood Regency",
+  "Shabby Chic",
+  "Maximalist",
+  "Nautical/Hamptons",
 ];
+
+// Exterior / facade styles
+export const EXTERIOR_STYLES = [
+  "Modern",
+  "Minimalist",
+  "Scandinavian",
+  "Industrial",
+  "Contemporary",
+  "Rustic",
+  "Coastal",
+  "Mediterranean",
+  "Farmhouse",
+  "Traditional",
+  "Urban",
+  "Tropical",
+  "Moroccan",
+  "Desert Chic",
+  "Modern Classic",
+  "Transitional",
+  "Nature-Inspired",
+  "Luxury",
+  "Futuristic",
+  "Organic Modern",
+  "Industrial Loft",
+  "Nautical/Hamptons",
+];
+
+// Garden / landscaping styles
+export const GARDEN_STYLES = [
+  "Nature-Inspired",
+  "Rustic",
+  "Mediterranean",
+  "Coastal",
+  "Tropical",
+  "Cottagecore",
+  "Zen",
+  "English Garden",
+  "Japanese Garden",
+];
+
+// ----------------------
+// Combined design styles
+// ----------------------
+
+// Combinăm toate stilurile din interior / exterior / grădină
+const allStyles = Array.from(
+  new Set([...INTERIOR_STYLES, ...EXTERIOR_STYLES, ...GARDEN_STYLES]),
+);
+
 // Sort styles alphabetically and keep "No Style" at the end for clarity.
-export const DESIGN_STYLES = [...styles.sort(), "No Style"];
+export const DESIGN_STYLES = [...allStyles].sort().concat("No Style");
+
+// ----------------------
+// Holidays / Events / Themes
+// ----------------------
 
 export const HOLIDAYS = [
   "None",
@@ -71,8 +133,9 @@ export const HOLIDAYS = [
   "Veteran’s Day",
   "Carnival",
   "Thanksgiving Weekend",
-  "Halloween Eve"
+  "Halloween Eve",
 ];
+
 export const EVENTS = [
   "None",
   "Birthday Party",
@@ -106,7 +169,7 @@ export const EVENTS = [
   "Festival Booth",
   "Community Gathering",
   "Baby’s First Birthday",
-  "Farewell Party"
+  "Farewell Party",
 ];
 
 export const SEASONAL_THEMES = [
@@ -123,5 +186,21 @@ export const SEASONAL_THEMES = [
   "Romantic Ambiance",
   "Garden Party",
   "Urban Modern",
-  "Pastel Dreams"
+  "Pastel Dreams",
+
+  // Added themes
+  "Spring Blossoms",
+  "Summer Garden Party",
+  "Golden Autumn Harvest",
+  "Cozy Cabin Winter",
+  "Scandi Winter Hygge",
+  "Holiday Sparkle",
+  "Neutral All-Season",
+  "Earthy Boho Vibes",
+  "Monochrome Minimal",
+  "Soft Neutrals",
+  "Bold Color Pop",
+  "Moody & Dramatic",
+  "Fresh Greenery",
+  "Festive Glam",
 ];
