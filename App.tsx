@@ -1,5 +1,3 @@
-// VERSIUNEA FINALĂ ȘI COMPLETĂ - COPIAZĂ ȘI LIPEȘTE TOT ACEST COD
-
 import React, { useState, useEffect } from 'react';
 import {
   HashRouter,
@@ -14,7 +12,15 @@ import {
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthPage from './pages/AuthPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import { DESIGN_STYLES, HOLIDAYS, EVENTS, SEASONAL_THEMES } from './constants';
+import {
+  DESIGN_STYLES,
+  HOLIDAYS,
+  EVENTS,
+  SEASONAL_THEMES,
+  INTERIOR_STYLES,
+  EXTERIOR_STYLES,
+  GARDEN_STYLES,
+} from './constants';
 import {
   FlowType,
   GenerationResult,
@@ -116,7 +122,7 @@ const StandardLayout: React.FC<{ children: React.ReactNode }> = ({
           to="/"
           className="text-2xl font-bold text-gray-900 tracking-tight"
         >
-          Genius Design & Decor 
+          Genius Design & Decor
         </Link>
         <div className="flex items-center gap-4">
           {credits !== null && (
@@ -181,7 +187,15 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [style, setStyle] = useState<string>(DESIGN_STYLES[0]);
+
+  // 👇 nou: Space Type (Interior / Exterior / Garden)
+  const [spaceType, setSpaceType] = useState<'Interior' | 'Exterior' | 'Garden'>(
+    'Interior',
+  );
+
+  // stilul selectat (default: primul din INTERIOR_STYLES)
+  const [style, setStyle] = useState<string>(INTERIOR_STYLES[0] || DESIGN_STYLES[0]);
+
   const [details, setDetails] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -189,7 +203,8 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   const [credits, setCredits] = useState<number | null>(null);
   const [result, setResult] = useState<GenerationResult | null>(null);
 
-  const [designStyles, setDesignStyles] = useState(DESIGN_STYLES);
+  // 👇 nou: custom styles, separate de listele de bază
+  const [customStyles, setCustomStyles] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
@@ -206,6 +221,14 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
   const [holiday, setHoliday] = useState(HOLIDAYS[0]);
   const [event, setEvent] = useState(EVENTS[0]);
   const [seasonalTheme, setSeasonalTheme] = useState(SEASONAL_THEMES[0]);
+
+  // 👇 listă de stiluri activă în funcție de Space Type
+  const currentStyleList =
+    spaceType === 'Interior'
+      ? [...customStyles, ...INTERIOR_STYLES]
+      : spaceType === 'Exterior'
+      ? [...customStyles, ...EXTERIOR_STYLES]
+      : [...customStyles, ...GARDEN_STYLES];
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -224,18 +247,20 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     fetchCredits();
   }, [user]);
 
+  // restore state când vii din "Generate Again"
   useEffect(() => {
     if (location.state && (location.state as any).imageBase64) {
       const {
         imageBase64,
         imageMimeType,
-        style,
+        style: restoredStyle,
         details,
         holiday,
         event,
         seasonalTheme,
       } = location.state as Partial<GenerationResult> & {
         imageMimeType?: string;
+        style?: string;
       };
 
       if (imageBase64 && imageMimeType) {
@@ -244,11 +269,21 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         setImageBase64(imageBase64);
       }
 
-      if (style) {
-        if (!designStyles.includes(style)) {
-          setDesignStyles((prev) => [style, ...prev]);
+      if (restoredStyle) {
+        // determinăm Space Type în funcție de liste
+        if (INTERIOR_STYLES.includes(restoredStyle)) {
+          setSpaceType('Interior');
+        } else if (EXTERIOR_STYLES.includes(restoredStyle)) {
+          setSpaceType('Exterior');
+        } else if (GARDEN_STYLES.includes(restoredStyle)) {
+          setSpaceType('Garden');
+        } else {
+          // dacă nu există în liste, îl tratăm ca stil custom
+          setCustomStyles((prev) =>
+            prev.includes(restoredStyle) ? prev : [restoredStyle, ...prev],
+          );
         }
-        setStyle(style);
+        setStyle(restoredStyle);
       }
 
       if (details) setDetails(details);
@@ -258,7 +293,19 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
 
       navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location, navigate, designStyles]);
+  }, [location, navigate]);
+
+  // când se schimbă Space Type la Design, dacă stilul curent nu e în noua listă -> îl resetăm
+  useEffect(() => {
+    if (flowType === FlowType.Design) {
+      if (!currentStyleList.includes(style)) {
+        if (currentStyleList.length > 0) {
+          setStyle(currentStyleList[0]);
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spaceType, flowType]);
 
   const handleImageSelect = (file: File, base64: string) => {
     setImageFile(file);
@@ -274,8 +321,9 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
     const { name, colorPalette, furnitureTypes, decorElements, overallMood } =
       customPresetFields;
     if (name.trim()) {
-      const newStyles = [name, ...designStyles.filter((s) => s !== name)];
-      setDesignStyles(newStyles);
+      setCustomStyles((prev) =>
+        prev.includes(name) ? prev : [name, ...prev],
+      );
       setStyle(name);
 
       const presetDetails = [
@@ -359,20 +407,21 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         throw new Error(errorData.error || 'Failed to generate design');
       }
 
-      const result = await response.json();
+      const apiResult = await response.json();
 
-      console.log('API RESULT:', result);
+      console.log('API RESULT:', apiResult);
 
       const generatedImages: string[] =
-        Array.isArray(result.generatedImages) && result.generatedImages.length > 0
-          ? [result.generatedImages[0]] // doar prima imagine
-          : typeof result.generatedImages === 'string'
-          ? [result.generatedImages]
-          : typeof result.image === 'string'
+        Array.isArray(apiResult.generatedImages) &&
+        apiResult.generatedImages.length > 0
+          ? [apiResult.generatedImages[0]] // doar prima imagine
+          : typeof apiResult.generatedImages === 'string'
+          ? [apiResult.generatedImages]
+          : typeof apiResult.image === 'string'
           ? [
-              result.image.startsWith('data:image')
-                ? result.image
-                : `data:image/png;base64,${result.image}`,
+              apiResult.image.startsWith('data:image')
+                ? apiResult.image
+                : `data:image/png;base64,${apiResult.image}`,
             ]
           : [];
 
@@ -385,7 +434,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
         generatedImageBase64: generatedImages,
         style: submissionStyle,
         details,
-        suggestions: result.suggestions,
+        suggestions: apiResult.suggestions,
         imageBase64,
         imageMimeType: imageFile.type,
         holiday: decorHoliday,
@@ -394,9 +443,10 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
       };
 
       await addResult(resultToStore);
-      setCredits(result.creditsRemaining);
+      setCredits(apiResult.creditsRemaining);
+      setResult(resultToStore);
 
-      if (result.creditsRemaining === 0) {
+      if (apiResult.creditsRemaining === 0) {
         setIsUpgradeModalOpen(true);
       }
 
@@ -449,35 +499,60 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
           </h2>
 
           {flowType === FlowType.Design && (
-            <div>
-              <label
-                htmlFor="style"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Design Style
-              </label>
-              <div className="flex items-center gap-2">
+            <>
+              <div>
+                <label
+                  htmlFor="spaceType"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Space Type
+                </label>
                 <select
-                  id="style"
-                  value={style}
-                  onChange={(e) => setStyle(e.target.value)}
+                  id="spaceType"
+                  value={spaceType}
+                  onChange={(e) =>
+                    setSpaceType(e.target.value as 'Interior' | 'Exterior' | 'Garden')
+                  }
                   className={formInputStyles}
                 >
-                  {designStyles.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
+                  <option value="Interior">Interior</option>
+                  <option value="Exterior">Exterior</option>
+                  <option value="Garden">Garden/Landscaping</option>
                 </select>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(true)}
-                  className="text-sm text-[#E75480] hover:text-[#D2436D] font-medium whitespace-nowrap"
-                >
-                  Create style
-                </button>
               </div>
-            </div>
+
+              <div>
+                <label
+                  htmlFor="style"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {spaceType} Style
+                </label>
+                <div className="flex items-center gap-2">
+                  <select
+                    id="style"
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
+                    className={formInputStyles}
+                  >
+                    {currentStyleList.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  {spaceType === 'Interior' && (
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(true)}
+                      className="text-sm text-[#E75480] hover:text-[#D2436D] font-medium whitespace-nowrap"
+                    >
+                      Create style
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
           )}
 
           {flowType === FlowType.Decor && (
