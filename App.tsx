@@ -116,7 +116,7 @@ const StandardLayout: React.FC<{ children: React.ReactNode }> = ({
           to="/"
           className="text-2xl font-bold text-gray-900 tracking-tight"
         >
-          Genius Design & Decor TEST
+          Genius Design & Decor 
         </Link>
         <div className="flex items-center gap-4">
           {credits !== null && (
