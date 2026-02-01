@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 // Folosim modelele de top
 const textModel = 'gemini-2.5-flash';
-const imageModel = 'gemini-2.5-flash-image-preview'; 
+const imageModel = 'gemini-2.5-flash-image'; 
 
 function base64ToPart(base64: string, mimeType: string): Part {
     return {

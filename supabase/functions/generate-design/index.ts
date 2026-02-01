@@ -55,7 +55,7 @@ async function generateImage(
   seasonalTheme?: string
 ): Promise<string[]> {
   const imagePart = base64ToPart(base64Image, mimeType);
-  const imageModel = 'gemini-2.5-flash-image-preview';
+  const imageModel = 'gemini-2.5-flash-image';
   
   let prompt = `Redesign the provided image in a photorealistic "${style}" style. Create a distinct variation.`;
   if (holiday && holiday !== 'None') {
