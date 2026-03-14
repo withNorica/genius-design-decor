@@ -673,7 +673,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
               Close
             </button>
             <a
-              href="https://www.geniusdesigndecor.com/pricing"
+              href={`https://www.geniusdesigndecor.com/pricing?userId=${user?.id || ''}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 text-sm font-medium text-white bg-[#E75480] border border-transparent rounded-md shadow-sm hover:bg-[#D2436D] transition"
