@@ -17,6 +17,22 @@ export interface DecorSuggestions {
 
 export type Suggestions = DesignSuggestions | DecorSuggestions;
 
+export interface ShoppingItem {
+  name: string;
+  category: string;
+  description: string;
+  estimatedPrice: string;
+  searchQuery?: string;
+}
+
+export interface ColorPalette {
+  colors: {
+    name: string;
+    hex: string;
+  }[];
+  materials: string[];
+}
+
 export interface GenerationResult {
   id: string;
   type: FlowType;

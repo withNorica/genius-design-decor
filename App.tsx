@@ -34,7 +34,8 @@ import { Modal } from './components/Modal';
 import { BeforeAfterSlider } from './components/BeforeAfterSlider';
 import { addResult, getResult, initDB } from './idb';
 import { supabase } from './lib/supabase';
-
+import { ShoppingList } from './components/ShoppingList';
+import { ColorPaletteExtractor } from './components/ColorPaletteExtractor';
 // Main App component with Router
 const App: React.FC = () => {
   useEffect(() => {
@@ -994,6 +995,11 @@ const ResultPage: React.FC = () => {
         result.style !== 'thematic decor'
       ? `Design Suggestions (Style: ${result.style})`
       : 'Design Suggestions';
+  const selectedGeneratedImage = images[selectedImageIndex];
+  const selectedGeneratedMimeType =
+    selectedGeneratedImage?.match(/^data:(.*?);base64,/)?.[1] ||
+    result.imageMimeType ||
+    'image/png';
 
   return (
     <div className="min-h-screen bg-stone-50 text-gray-800 font-sans p-4 sm:p-8">
@@ -1089,6 +1095,20 @@ const ResultPage: React.FC = () => {
               />
             )}
           </div>
+        </div>
+        <div className="mt-8 lg:col-span-2">
+          {selectedGeneratedImage && (
+            <div className="grid lg:grid-cols-2 gap-8 mb-8">
+              <ColorPaletteExtractor
+                imageBase64={selectedGeneratedImage}
+                mimeType={selectedGeneratedMimeType}
+              />
+              <ShoppingList
+                imageBase64={selectedGeneratedImage}
+                mimeType={selectedGeneratedMimeType}
+              />
+            </div>
+          )}
         </div>
       </main>
 
