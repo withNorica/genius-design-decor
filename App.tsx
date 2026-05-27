@@ -34,6 +34,7 @@ import { Modal } from './components/Modal';
 import { BeforeAfterSlider } from './components/BeforeAfterSlider';
 import { addResult, getResult, initDB } from './idb';
 import { supabase } from './lib/supabase';
+import { LoadingSpinner } from './components/LoadingSpinner';
 import { ShoppingList } from './components/ShoppingList';
 import { ColorPaletteExtractor } from './components/ColorPaletteExtractor';
 // Main App component with Router
@@ -653,6 +654,7 @@ const DesignPage: React.FC<DesignPageProps> = ({ flowType }) => {
           >
             {isLoading ? loadingMessage : `Generate ${flowType} Ideas`}
           </Button>
+           {isLoading && <LoadingSpinner />}
 
           {error && (
             <p className="text-sm text-red-600 mt-2 text-center">{error}</p>
